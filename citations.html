@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enseignements de Joe Hudson</title>
+  <style>
+    /* Styles de base */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      color: #333;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: 2rem;
+    }
+    .quote-card {
+      background-color: #fff;
+      border-radius: 5px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      font-size: 1.2rem;
+      white-space: pre-wrap;
+    }
+    .reflection-area {
+      width: 100%;
+      height: 100px;
+      padding: 10px;
+      font-size: 1rem;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      resize: vertical;
+    }
+    .buttons {
+      margin-bottom: 20px;
+    }
+    .buttons button {
+      margin-right: 10px;
+      padding: 10px 15px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #007BFF;
+      color: #fff;
+    }
+    .buttons button:hover {
+      background-color: #0056b3;
+    }
+    /* Les boutons marqués de cette classe seront cachés en mode focus */
+    .hide-in-focus {
+      /* rien ici, c'est le comportement normal */
+    }
+    .reflections-list {
+      background-color: #fff;
+      border-radius: 5px;
+      padding: 15px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      margin-top: 20px;
+    }
+    .reflections-list h2 {
+      margin-top: 0;
+    }
+    .reflections-list li {
+      margin-bottom: 10px;
+    }
+    .hidden {
+      display: none;
+    }
+    /* En mode focus, on cache uniquement la zone de réflexion et les boutons marqués */
+    .focus-mode .reflection-area,
+    .focus-mode .hide-in-focus {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="appContainer">
+    <header>
+      <h1>Enseignements de Joe Hudson</h1>
+    </header>
+    
+    <!-- Carte affichant la citation aléatoire -->
+    <div class="quote-card" id="quoteCard">
+      <!-- La citation sera insérée ici via JS -->
+    </div>
+    
+    <!-- Zone de réflexion -->
+    <textarea id="reflection" class="reflection-area" placeholder="Écris ta réflexion ici..."></textarea>
+    
+    <!-- Boutons d'action -->
+    <div class="buttons">
+      <button id="saveBtn" class="hide-in-focus">Sauvegarder</button>
+      <button id="viewBtn" class="hide-in-focus">Voir mes réflexions</button>
+      <button id="nextQuoteBtn">Citation suivante</button>
+      <button id="focusBtn">Mode focus</button>
+    </div>
+    
+    <!-- Liste des réflexions sauvegardées -->
+    <div class="reflections-list hidden" id="reflectionsList">
+      <h2>Mes Réflexions</h2>
+      <ul id="reflectionsUl">
+        <!-- Les réflexions seront affichées ici -->
+      </ul>
+      <button id="deleteSelectedBtn">Supprimer sélection</button>
+      <button id="closeReflections">Fermer</button>
+    </div>
+  </div>
+  
+  <script>
+    // Liste des citations (enseignements) de Joe Hudson, extraites sans modification
+    const quotes = [
+      "1. If you’re scared of feeling an emotion, you’re already in it.",
+      "2. Constantly trying to make sense of your emotions prevents you from hearing their wisdom.",
+      "3. Joy is the matriarch of a family of emotions. She won’t come into your house if her children are not welcome.",
+      "4. If you can’t welcome the emotion, welcome the resistance to it.",
+      "5. Ego is as much what you don’t think you are as what you think you are.",
+      "6. You can’t give or receive love fully if you’re constantly calculating what could go wrong.",
+      `7. You also cannot love fully unless you see that you are completely empowered.
+It is near impossible to love what you think oppresses you.`,
+      "8. We often abandon ourselves in an attempt to prevent other people from abandoning us.",
+      "9. When your thinking is binary, fear is running the show.",
+      "10. The next time you’re in freeze or depression, notice how much of it is repressed or held back anger.",
+      `11. Anger in its purity is beautiful.
+Trying to change somebody, change their beliefs, be above them, dominate them, control them, scare them, push them away, or try to make them do anything — that is manipulation, not anger.`,
+      "12. The next time you’re feeling anxious, notice how much of it is repressed or held back excitement.",
+      `13. People don’t want you to be perfect.
+What they want is to feel connected to you.`,
+      "14. People who are exhausted all day are often in the habit of beating themselves up or telling themselves how they should be.",
+      "15. Endless self-criticism is usually a sign that you want to be seen as valuable rather than to be of value.",
+      `16. There is no way of getting it perfect. There is no complete, no finish line, no done. There is simply “What’s the next experiment?” There is only play.`,
+      "17. If you can’t say “no” easily, you can’t be trusted.",
+      `18. •	If it feels scary to say, it’s important
+•	If it feels scary to say, NOT saying it will hurt your connection
+•	If it feels scary to say, NOT saying it prioritizes their imagined reaction over your truth`,
+      "19. You can’t be accepted for who you are if you’re not showing up as who you are.",
+      `20. We are often scared of the consequences of revealing who we actually are or what we actually think.
+But whatever that “consequence” is also happens to be a direct path to the life where we are accepted and loved for who we are.`,
+      `21. Willpower is needed if it’s a desire from the head.
+Willpower is not needed if it’s a desire from the heart.`,
+      "22. If you feel oppressed, the most powerful oppressor is the thought that you can’t do anything about it.",
+      `23. If you struggle with paying attention:
+What was the quality of attention you got as a kid?`,
+      "24. If you’re trying to manage other people’s feelings, you’re abandoning your own.",
+      `25. Many people believe that peace means never feeling agitated.
+Deep peace is the ability to be with agitation without aversion.`,
+      "26. People cannot be split up into parts you accept and parts you reject. A person is a whole.",
+      "27. Unconditional love isn’t people-pleasing or caretaking. It’s the capacity to hold space for others’ choices while honoring your own truth.",
+      "28. Judging others for showing off is often an indication that we’re struggling with our own desire to be seen.",
+      "29. Being known is the empty calorie surrogate to being seen.",
+      "30. The desire to be special can only exist when you don’t know who you are."
+    ];
+    
+    // Sélection aléatoire d'une citation
+    function getRandomQuote() {
+      const randomIndex = Math.floor(Math.random() * quotes.length);
+      return quotes[randomIndex];
+    }
+    
+    // Affichage de la citation dans la carte
+    function displayQuote() {
+      const quoteCard = document.getElementById("quoteCard");
+      quoteCard.textContent = getRandomQuote();
+    }
+    
+    // Sauvegarde de la réflexion dans le localStorage
+    function saveReflection() {
+      const reflectionInput = document.getElementById("reflection");
+      const text = reflectionInput.value.trim();
+      if (!text) {
+        alert("Veuillez écrire une réflexion avant de sauvegarder.");
+        return;
+      }
+      
+      let reflections = JSON.parse(localStorage.getItem("hudsonReflections")) || [];
+      const currentQuote = document.getElementById("quoteCard").textContent;
+      const newReflection = {
+        quote: currentQuote,
+        reflection: text,
+        timestamp: new Date().toLocaleString()
+      };
+      
+      reflections.push(newReflection);
+      localStorage.setItem("hudsonReflections", JSON.stringify(reflections));
+      
+      alert("Réflexion sauvegardée !");
+      reflectionInput.value = "";
+    }
+    
+    // Affichage des réflexions sauvegardées avec checkboxes pour suppression
+    function viewReflections() {
+      const reflections = JSON.parse(localStorage.getItem("hudsonReflections")) || [];
+      const reflectionsUl = document.getElementById("reflectionsUl");
+      reflectionsUl.innerHTML = "";
+      
+      if (reflections.length === 0) {
+        reflectionsUl.innerHTML = "<li>Aucune réflexion sauvegardée.</li>";
+      } else {
+        reflections.forEach((ref, index) => {
+          const li = document.createElement("li");
+          li.innerHTML = `
+            <input type="checkbox" class="reflection-checkbox" data-index="${index}">
+            <strong>Citation :</strong> ${ref.quote}<br>
+            <strong>Réflexion :</strong> ${ref.reflection}<br>
+            <em>${ref.timestamp}</em>
+          `;
+          reflectionsUl.appendChild(li);
+        });
+      }
+      document.getElementById("reflectionsList").classList.remove("hidden");
+    }
+    
+    // Suppression des réflexions sélectionnées
+    function deleteSelectedReflections() {
+      const checkboxes = document.querySelectorAll(".reflection-checkbox:checked");
+      if (checkboxes.length === 0) {
+        alert("Veuillez sélectionner au moins une réflexion à supprimer.");
+        return;
+      }
+      if (!confirm("Êtes-vous sûr de vouloir supprimer les réflexions sélectionnées ?")) {
+        return;
+      }
+      let reflections = JSON.parse(localStorage.getItem("hudsonReflections")) || [];
+      let indexesToDelete = Array.from(checkboxes).map(cb => parseInt(cb.getAttribute("data-index")));
+      
+      reflections = reflections.filter((item, index) => !indexesToDelete.includes(index));
+      
+      localStorage.setItem("hudsonReflections", JSON.stringify(reflections));
+      alert("Réflexions supprimées !");
+      viewReflections();
+    }
+    
+    // Fermeture de la section d'affichage des réflexions
+    function closeReflections() {
+      document.getElementById("reflectionsList").classList.add("hidden");
+    }
+    
+    // Basculement du mode focus et mise à jour du libellé du bouton
+    function toggleFocusMode() {
+      const container = document.getElementById("appContainer");
+      container.classList.toggle("focus-mode");
+      const focusBtn = document.getElementById("focusBtn");
+      if (container.classList.contains("focus-mode")) {
+        focusBtn.textContent = "Quitter le mode focus";
+      } else {
+        focusBtn.textContent = "Mode focus";
+      }
+    }
+    
+    // Initialisation lors du chargement de la page
+    document.addEventListener("DOMContentLoaded", () => {
+      displayQuote();
+      document.getElementById("saveBtn").addEventListener("click", saveReflection);
+      document.getElementById("viewBtn").addEventListener("click", viewReflections);
+      document.getElementById("closeReflections").addEventListener("click", closeReflections);
+      document.getElementById("focusBtn").addEventListener("click", toggleFocusMode);
+      document.getElementById("deleteSelectedBtn").addEventListener("click", deleteSelectedReflections);
+      document.getElementById("nextQuoteBtn").addEventListener("click", displayQuote);
+    });
+  </script>
+</body>
+</html>
